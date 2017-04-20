@@ -11,7 +11,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Question 1
 
-Consider the space shuttle data ?*shuttle* in the *MASS* library. Consider modeling the use of the autolander as the outcome (variable name use). Fit a logistic regression model with autolander (variable auto) use (labeled as "auto" 1) versus not (0) as predicted by wind sign (variable wind). Give the estimated odds ratio for autolander use comparing head winds, labeled as "head" in the variable headwind (numerator) to tail winds (denominator).
+Consider the space shuttle data ?*shuttle* in the *MASS* library. Consider 
+modeling the use of the autolander as the outcome (variable name use). 
+Fit a logistic regression model with autolander (variable auto) use 
+(labeled as "auto" 1) versus not (0) as predicted by wind sign (variable wind). 
+Give the estimated odds ratio for autolander use comparing head winds, 
+labeled as "head" in the variable headwind (numerator) to tail winds 
+(denominator).
 
 + 0.969
 + 0.031
@@ -22,8 +28,13 @@ Consider the space shuttle data ?*shuttle* in the *MASS* library. Consider model
 library(MASS)
 ```
 
+```{r, q1prepare}
+shuttle$useBin = 1 * (shuttle$use == "auto")
+shuttle$windBin = 1 * (shuttle$wind == "head")
+```
+
 ```{r, q1fitdata}
-q1fit <- glm(formula = use ~ wind, data = shuttle, family = binomial)
+q1fit <- glm(formula = useBin ~ windBin, data = shuttle, family = binomial)
 summary(q1fit)
 ```
 
@@ -35,12 +46,14 @@ plot(shuttle$wind, q1fit$fitted, pch=19, col="blue",
 Odds ratio is the $\beta_1$ coefficient of the fit:
 
 ```{r, q1answer}
-q1fit$coef[2]
+exp(q1fit$coef[2])
 ```
 
 ## Question 2
 
-Consider the previous problem. Give the estimated odds ratio for autolander use comparing head winds (numerator) to tail winds (denominator) adjusting for wind strength from the variable magn.
+Consider the previous problem. Give the estimated odds ratio for autolander 
+use comparing head winds (numerator) to tail winds (denominator) adjusting 
+for wind strength from the variable magn.
 
 + 1.485
 + 1.00
@@ -51,9 +64,33 @@ Consider the previous problem. Give the estimated odds ratio for autolander use 
 library(MASS)
 ```
 
+```{r, q2prepare}
+shuttle$useBin = 1 * (shuttle$use == "auto")
+shuttle$windBin = 1 * (shuttle$wind == "head")
+```
+
 ```{r, q2fitdata}
-q2fit <- glm(formula = use ~ wind + magn, data = shuttle, family = binomial)
+q2fit <- glm(formula = useBin ~ windBin + magn, 
+             data = shuttle, family = binomial)
 summary(q2fit)
+```
+
+```{r, q2plot1}
+library(ggplot2)
+plotdata = data.frame(wind = shuttle$wind, 
+                      fitted = q2fit$fitted, 
+                      magn = shuttle$magn)
+ggplot(data = plotdata, aes(fitted, wind)) + 
+    geom_point() + 
+    facet_grid(magn ~ .) + 
+    xlab("Wind") + ylab("Prob Use")
+```
+
+Odds ratio is the $\beta_1$ coefficient of the fit and is the same as 
+in first question because magn variable does not change the slope of the fit:
+
+```{r, q2answer}
+exp(q2fit$coef[2])
 ```
 
 ## Question 3
@@ -64,6 +101,8 @@ If you fit a logistic regression model to a binary variable, for example use of 
 + The coefficients reverse their signs.
 + The coefficients change in a non-linear fashion.
 + The intercept changes sign, but the other coefficients don't.
+
+The answer is "The coefficients reverse their signs."
 
 ## Question 4
 
