@@ -1,0 +1,89 @@
+---
+title: "GLM_Exercises2"
+author: "Ilya Maltsev"
+date: '20 Apr 2017'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, libraries}
+library(dplyr)
+library(ggplot2)
+```
+
+## Poisson model
+
+### Question 1
+
+Load the dataset Seatbelts as part of the datasets package via data(Seatbelts). 
+Use as.data.frame to convert the object to a dataframe. Fit a Poisson 
+regression GLM with UKDriversKilled as the outcome and kms, PetrolPrice and 
+law as predictors. Interpret your results.
+
+```{r, q1prepare}
+data("Seatbelts")
+seatbelts = as.data.frame(Seatbelts)
+seatbelts = seatbelts %>% 
+    mutate(pp = (PetrolPrice - mean(PetrolPrice))/sd(PetrolPrice)) %>%
+    mutate(mmc = (kms - mean(kms))/1000)
+```
+
+```{r, q1fit}
+q1fit = glm(data = seatbelts, 
+            formula = DriversKilled ~ pp + law + mmc, 
+            family = poisson)
+summary(q1fit)
+```
+
+Increasing of normalized petrol price per unit causes decreasing of expected 
+drivers killed on `r round((1 - exp(q1fit$coef[2])) * 100, 2)`%.
+
+Introducing law causes decreasing of expected 
+drivers killed on `r round((1 - exp(q1fit$coef[3])) * 100, 2)`%.
+
+Increasing of distance per unit causes decreasing of expected 
+drivers killed on `r round((1 - exp(q1fit$coef[4])) * 100, 2)`%.
+
+### Question 2
+
+Refer to question 1. Fit a linear model with the log of drivers killed as 
+the outcome. Interpret your results.
+
+```{r, q2fit}
+q2fit = lm(data = seatbelts, 
+           formula = I(log(DriversKilled)) ~ pp + law + mmc)
+summary(q2fit)
+```
+
+### Question 3
+
+Refer to question 1. Fit your Poisson log-linear model with drivers as a 
+log offset (to consider the proportion of drivers killed of those killed 
+or seriously injured.)
+
+```{r, q3fit}
+q3fit = glm(data = seatbelts, 
+            formula = DriversKilled ~ pp + law + mmc,
+            family = poisson,
+            offset = log(drivers))
+summary(q3fit)
+```
+
+### Question 4
+
+Refer to Question 1. Use the anova function to compare models with just law, 
+law and PetrolPrice and all three predictors.
+
+```{r, q4fit}
+q41fit = glm(data = seatbelts, 
+            formula = DriversKilled ~ law, 
+            family = poisson)
+q42fit = update(q41fit, 
+                formula = DriversKilled ~ law + pp)
+q43fit = update(q42fit, 
+                formula = DriversKilled ~ law + pp + mmc)
+anova(q41fit, q42fit, q43fit)
+```
