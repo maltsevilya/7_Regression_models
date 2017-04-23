@@ -1,0 +1,118 @@
+---
+title: "GLM_Exercises"
+author: "Ilya Maltsev"
+date: '20 Apr 2017'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, libraries}
+library(dplyr)
+```
+
+## Binary generalized linear regression
+
+### Question 1
+
+Load the dataset Seatbelts as part of the datasets package via data(Seatbelts). Use
+as.data.frame to convert the object to a dataframe. Create a new outcome variable for
+whether or not greater than 119 drivers were killed that month. Fit a logistic regression GLM with this variable as the outcome and kms, PetrolPrice and law as predictors. Interpret your parameters.
+
+```{r, q1prepare}
+data("Seatbelts")
+seatbelts = as.data.frame(Seatbelts)
+seatbelts = seatbelts %>% 
+    mutate(mmc = (kms - mean(kms))/1000) %>%
+    mutate(pp = (PetrolPrice - mean(PetrolPrice))/sd(PetrolPrice)) %>%
+    mutate(extra = DriversKilled > 119)
+```
+
+```{r, q1fit}
+q1fit = glm(data = seatbelts, 
+            formula = extra ~ mmc + pp + law, 
+            family = binomial)
+summary(q1fit)
+```
+
+Distance has low effect on a count of days with extra amount of drivers killed:
+
+```{r, q1interpretation1}
+print(q1fit$coef[2])
+print(exp(q1fit$coef[2]))
+```
+
+Increasing petrol price and law have an effect on decreasing of days count 
+with extra amount of drivers killed:
+
+```{r, q1interpretation2}
+print(q1fit$coef[3])
+print(exp(q1fit$coef[3]))
+print(q1fit$coef[4])
+print(exp(q1fit$coef[4]))
+```
+
+Only petrol price decreasing has statistical significance because only its 
+confidence interval does not include 1:
+```{r, q1confint}
+print(exp(confint(q1fit)))
+```
+
+### Question 2
+
+Fit a binomial model with DriversKilled as the outcome and drivers as the total 
+count with kms, PetrolPrice and law as predictors, interpret your results.
+
+```{r, q2prepare}
+data("Seatbelts")
+seatbelts = as.data.frame(Seatbelts)
+seatbelts = seatbelts %>% 
+    mutate(mmc = (kms - mean(kms))/1000) %>%
+    mutate(pp = (PetrolPrice - mean(PetrolPrice))/sd(PetrolPrice))
+```
+
+```{r, q2fit}
+q2fit = glm(data = seatbelts, 
+            formula = cbind(DriversKilled, drivers - DriversKilled) ~ mmc + pp + law, 
+            family = binomial)
+summary(q2fit)
+```
+
+```{r, q2interpretation}
+print(q2fit$coef[2])
+print(exp(q2fit$coef[2]))
+print(q2fit$coef[3])
+print(exp(q2fit$coef[3]))
+print(q2fit$coef[4])
+print(exp(q2fit$coef[4]))
+print(exp(confint(q2fit)))
+```
+
+### Question 3
+
+Refer to Question 1. Use the anova function to compare models with just law, law and
+PetrolPrice and all three predictors.
+
+```{r, q3prepare}
+data("Seatbelts")
+seatbelts = as.data.frame(Seatbelts)
+seatbelts = seatbelts %>% 
+    mutate(mmc = (kms - mean(kms))/1000) %>%
+    mutate(pp = (PetrolPrice - mean(PetrolPrice))/sd(PetrolPrice)) %>%
+    mutate(extra = DriversKilled > 119)
+```
+
+```{r, q3fit}
+q31fit = glm(data = seatbelts, 
+             formula = extra ~ law, 
+             family = binomial)
+q32fit = glm(data = seatbelts, 
+             formula = extra ~ law + pp, 
+             family = binomial)
+q33fit = glm(data = seatbelts, 
+             formula = extra ~ law + pp + mmc, 
+             family = binomial)
+anova(q31fit, q32fit, q33fit)
+```
