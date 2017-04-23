@@ -11,9 +11,35 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Synopsis
 
+Fuel consumption seems to be one of the most important aspects of car usage. 
+Usually the less fuel is expended by a car the more usable the car is.
 
+The study is focused on relationship between fuel consumption (measured as 
+miles per gallon, MPG) and transmission type (automatic or manual).
+
+The main questions are:
+
+1. Is an automatic or manual transmission better for MPG?
+
+2. Quantify the MPG difference between automatic and manual transmissions.
+
+The data is used from _Motor Trend_ US magazine data.
 
 ## Exploratory data analysis
+
+### About the data
+
+The *mtcars* dataset from *datasets* package is used:
+
+1. *mpg* - Miles/(US) gallon.
+2. *am* - transmission (0 = automatic, 1 = manual).
+
+```{r, dataset}
+require(datasets)
+head(mtcars, 3)
+```
+
+The dataset contains `r nrow(mtcars)` observations.
 
 ## Modelling
 
