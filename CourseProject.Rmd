@@ -27,6 +27,11 @@ The data is used from _Motor Trend_ US magazine data.
 
 ## Exploratory data analysis
 
+```{r, attach.libraries, message=F, warning=F}
+require(datasets)
+require(ggplot2)
+```
+
 ### About the data
 
 The *mtcars* dataset from *datasets* package is used:
@@ -35,12 +40,54 @@ The *mtcars* dataset from *datasets* package is used:
 2. *am* - transmission (0 = automatic, 1 = manual).
 
 ```{r, dataset}
-require(datasets)
+data("mtcars")
 head(mtcars, 3)
 ```
 
 The dataset contains `r nrow(mtcars)` observations.
 
+### *MPG* distribution
+
+Try to verify the normality of the *mpg* data using [Shapiro-Wilk test](https://en.wikipedia.org/wiki/Shapiro%E2%80%93Wilk_test) with 0.05 level 
+of statistical significance and with distinction by cylinders count or 
+by transmission type or without it.
+
+```{r, mpg.normality.shapiro.wilk}
+rbind(
+    shapiro.test(mtcars$mpg[mtcars$cyl == 4]),
+    shapiro.test(mtcars$mpg[mtcars$cyl == 6]),
+    shapiro.test(mtcars$mpg[mtcars$cyl == 8]),
+    shapiro.test(mtcars$mpg[mtcars$am == 0]),
+    shapiro.test(mtcars$mpg[mtcars$am == 1]),
+    shapiro.test(mtcars$mpg)
+)[, c("data.name", "p.value")]
+```
+
+All the p-values are greater than 0.05 so we reject the null hypothesis that 
+the data are normal.
+
+The [Q-Q plot](https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot]) (see Appendix) 
+confirms that the *mpg* data does not follow normal distibution. 
+
+This means that Students t-test cannot be used to get statistical evidence
+of *mpg* to *am* dependency.
+
 ## Modelling
 
 ## Conclusions
+
+## Appendix
+
+### Normality of the *MPG* data
+
+The Q-Q plot for the *mpg* data:
+
+```{r, mpg.normality.qq}
+g = ggplot(mtcars)
+g + stat_qq(aes(sample = mpg, colour = factor(am)))
+g + stat_qq(aes(sample = mpg, colour = factor(cyl)))
+g + stat_qq(aes(sample = mpg))
+```
+
+The plots does not look like a straight line, this confirms that the *mpg* data
+does not follow normal distribution.
