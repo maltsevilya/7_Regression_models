@@ -74,6 +74,11 @@ of *mpg* to *am* dependency.
 
 ## Modelling
 
+```{r, fit1}
+fit1 = lm(formula = mpg ~ am + wt + hp, data = mtcars)
+summary(fit1)
+```
+
 ## Conclusions
 
 ## Appendix
