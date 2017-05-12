@@ -89,7 +89,8 @@ between fuel consumption and transmission type.
 
 [Shapiro-Wilk test](https://en.wikipedia.org/wiki/Shapiro%E2%80%93Wilk_test) is
 used to verify the normality of the *mpg* data. Level 
-of statistical significance is taken to be 0.05. Results for the *mpg* and with distinction by cylinders count or by transmission type are shown below:
+of statistical significance is taken to be 0.05. Results for the *mpg* and with
+distinction by cylinders count or by transmission type are shown below:
 
 ```{r, mpg.normality.shapiro.wilk}
 rbind(
