@@ -30,14 +30,12 @@ The data is used from _Motor Trend_ US magazine data.
 ```{r, attach.libraries, message=F, warning=F}
 require(datasets)
 require(ggplot2)
+require(corrplot)
 ```
 
 ### About the data
 
-The *mtcars* dataset from *datasets* package is used:
-
-1. *mpg* - Miles/(US) gallon.
-2. *am* - transmission (0 = automatic, 1 = manual).
+The *mtcars* dataset from *datasets* package is used.
 
 ```{r, dataset}
 data("mtcars")
@@ -48,9 +46,50 @@ The dataset contains `r nrow(mtcars)` observations.
 
 ### *MPG* distribution
 
-Try to verify the normality of the *mpg* data using [Shapiro-Wilk test](https://en.wikipedia.org/wiki/Shapiro%E2%80%93Wilk_test) with 0.05 level 
-of statistical significance and with distinction by cylinders count or 
-by transmission type or without it.
+The *mpg* data does not follow normal distribution (see Appendix). This means 
+that Students t-test cannot be used to get statistical evidence of *mpg* 
+to *am* dependency.
+
+### Correlation matrix
+
+Some of the *mtcars* variables are physically related, e.g. displacement and 
+horse power. Ideally, linear models should include only independent variables. 
+
+```{r, correlation.matrix, fig.width=4, fig.height=4}
+corrmatrix = cor(mtcars)
+corrplot(corrmatrix, method = "circle", order ="FPC")
+```
+
+Correlation matrix shows that the *mpg* correlates with the *cyl*, 
+*disp*, *hp*, *wt* the most. However the *cyl*, *disp*, *hp* are highly
+correlated with each other. The *wt* correlates with the *hp* less than with 
+the *cyl* and *disp*.
+
+## Modelling
+
+Consider the linear model $mpg=wt+hp+am$ according to the correlation matrix.
+
+```{r, fit.mpg_wt_hp_am}
+fit.mpg_wt_hp_am = lm(formula = mpg ~ wt + hp + I(factor(am)), data = mtcars)
+round(summary(fit.mpg_wt_hp_am)$coef, 4)
+```
+
+The value for *am* in the last column shows that the we failed to reject 
+the null hypothesis: the *am* does not affect the *mpg*. The analysis of 
+variance table (see Appendix) confirms this result.
+
+## Conclusions
+
+The *mtcars* data analysis does not confirm that there is a causal relationship 
+between fuel consumption and transmission type.
+
+## Appendix
+
+### Normality of the *MPG* data
+
+[Shapiro-Wilk test](https://en.wikipedia.org/wiki/Shapiro%E2%80%93Wilk_test) is
+used to verify the normality of the *mpg* data. Level 
+of statistical significance is taken to be 0.05. Results for the *mpg* and with distinction by cylinders count or by transmission type are shown below:
 
 ```{r, mpg.normality.shapiro.wilk}
 rbind(
@@ -66,33 +105,13 @@ rbind(
 All the p-values are greater than 0.05 so we reject the null hypothesis that 
 the data are normal.
 
-The [Q-Q plot](https://en.wikipedia.org/wiki/Q%E2%80%93Q_plot]) (see Appendix) 
-confirms that the *mpg* data does not follow normal distibution. 
+### Analysis of variance table
 
-This means that Students t-test cannot be used to get statistical evidence
-of *mpg* to *am* dependency.
-
-## Modelling
-
-```{r, fit1}
-fit1 = lm(formula = mpg ~ am + wt + hp, data = mtcars)
-summary(fit1)
+```{r, anova}
+fit.mpg_wt = lm(formula = mpg ~ wt, data = mtcars)
+fit.mpg_wt_hp = lm(formula = mpg ~ wt + hp, data = mtcars)
+anova(fit.mpg_wt, fit.mpg_wt_hp, fit.mpg_wt_hp_am)
 ```
 
-## Conclusions
-
-## Appendix
-
-### Normality of the *MPG* data
-
-The Q-Q plot for the *mpg* data:
-
-```{r, mpg.normality.qq}
-g = ggplot(mtcars)
-g + stat_qq(aes(sample = mpg, colour = factor(am)))
-g + stat_qq(aes(sample = mpg, colour = factor(cyl)))
-g + stat_qq(aes(sample = mpg))
-```
-
-The plots does not look like a straight line, this confirms that the *mpg* data
-does not follow normal distribution.
+The analysis shows that the *wt* and the *hp* are important for predicting the 
+*mpg* and the *am* has low importance.
